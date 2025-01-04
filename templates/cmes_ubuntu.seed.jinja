@@ -11,7 +11,6 @@ d-i keyboard-configuration/xkb-keymap select us
 d-i mirror/country string manual
 d-i mirror/http/hostname string archive.ubuntu.com
 d-i mirror/http/directory string /ubuntu
-d-i mirror/http/proxy string
 
 ### Account setup
 # Set to true if you want to encrypt the first user's home directory.
@@ -19,28 +18,18 @@ d-i user-setup/encrypt-home boolean false
 
 ### Clock and time zone setup
 # Controls whether or not the hardware clock is set to UTC.
-d-i clock-setup/utc boolean true
+d-i clock-setup/utc boolean false
 
 # You may set this to any valid setting for $TZ; see the contents of
 # /usr/share/zoneinfo/ for valid values.
-d-i time/zone string US/Eastern
+d-i time/zone string Australia/Sydney
 
 # Controls whether to use NTP to set the clock during the install
 d-i clock-setup/ntp boolean true
 
 ### Partitioning
-d-i partman-auto/disk string {{ install_device }}
-d-i partman-auto/method string {{ part_method }}
-
-# If one of the disks that are going to be automatically partitioned
-# contains an old LVM configuration, the user will normally receive a
-# warning. This can be preseeded away...
-d-i partman-lvm/device_remove_lvm boolean true
-# The same applies to pre-existing software RAID array:
-d-i partman-md/device_remove_md boolean true
-# And the same goes for the confirmation to write the lvm partitions.
-d-i partman-lvm/confirm boolean true
-d-i partman-lvm/confirm_nooverwrite boolean true
+d-i partman-auto/init_automatically_partition select biggest_free
+d-i partman-auto/method string lvm
 
 # For LVM partitioning, you can select how much of the volume group to use
 # for logical volumes.
@@ -53,98 +42,13 @@ d-i partman-lvm/confirm_nooverwrite boolean true
 # - home:   separate /home partition
 # - multi:  separate /home, /var, and /tmp partitions
 #d-i partman-auto/choose_recipe select atomic
-d-i partman-auto/choose_recipe select cis-compliant-partitions
+d-i partman-auto/choose_recipe select atomic
 
 # The full recipe format is documented in the file partman-auto-recipe.txt
 # included in the 'debian-installer' package or available from D-I source
 # repository. This also documents how to specify settings such as file
 # system labels, volume group names and which physical devices to include
 # in a volume group.
-{# NOTICE: If the total of your minimum partition sizes (first number) exceed the available disk space,
-           ubiquity will ignore your recipe and use default partitioning !!! #}
-d-i partman-auto/expert_recipe string \
-        cis-compliant-partitions :: \
-{% if _version.version_number < 21 %}
-{%      if boot_style == 'efi' %}
-                250 250 250 fat32 \
-                        $primary{ } \
-                        method{ efi } format{ } \
-                . \
-{%      endif %}
-                500 500 500 ext4 \
-                        $primary{ } {% if boot_style == 'bios' %}$bootable{ }{% endif %} \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /boot } \
-                . \
-{% elif _version.version_number > 21 %}
-{%      if boot_style == 'bios' %}
-                1 512 1 free \
-                        $primary{ } \
-                        method{ biosgrub } \
-                . \
-{%      endif %}
-                512 512 512 fat32 \
-                        $primary{ } \
-                        method{ efi } format{ } \
-                        mountpoint{ /boot/efi } \
-                . \
-{% endif %}
-                1024 1024 1024 linux-swap \
-                        $lvmok {} $lv_name{ swap } \
-                        method{ swap } format{ } \
-                . \
-                8192 10240 12800 ext4 \
-                        $lvmok {} $lv_name{ slash } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ / } \
-                . \
-                1024 2048 4096 ext4 \
-                        $lvmok {} $lv_name{ tmp } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /tmp } \
-                        options/nodev{ nodev } \
-                        options/nosuid{ nosuid } \
-                . \
-                5120 10240 102400 ext4 \
-                        $lvmok {} $lv_name{ var } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /var } \
-                . \
-                1024 2048 4096 ext4  \
-                        $lvmok {} $lv_name{ var_tmp } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /var/tmp } \
-                        options/nodev{ nodev } \
-                        options/nosuid{ nosuid } \
-                        options/noexec{ noexec } \
-                . \
-                1024 5120 10240 ext4 \
-                        $lvmok {} $lv_name{ var_log } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /var/log } \
-                . \
-                1024 5120 10240 ext4 \
-                        $lvmok {} $lv_name{ var_log_audit } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /var/log/audit } \
-                . \
-                4096 10240 102400 ext4 \
-                        $lvmok {} $lv_name{ home } \
-                        method{ format } format{ } \
-                        use_filesystem{ } filesystem{ ext4 } \
-                        mountpoint{ /home } \
-                        options/nodev{ nodev } \
-                . \
-                1024 1024 -1 ext4 \
-                        $lvmok {} $lv_name{ unallocated } \
-                .
 
 # This makes partman automatically partition without confirmation, provided
 # that you told it what to do using one of the methods above.
@@ -153,16 +57,6 @@ d-i partman-partitioning/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
 d-i partman/confirm boolean true
 d-i partman/confirm_nooverwrite boolean true
-
-
-
-### Package selection
-{# NOTICE: To list available package selections
-sudo apt-get -y install tasksel
-sudo tasksel --list-tasks #}
-tasksel tasksel/first multiselect ubuntu-desktop
-#tasksel tasksel/first multiselect lamp-server, print-server
-#tasksel tasksel/first multiselect kubuntu-desktop
 
 ### Boot loader installation
 # This is fairly safe to set, it makes grub install automatically to the MBR
@@ -175,7 +69,7 @@ d-i grub-installer/with_other_os boolean true
 
 # Due notably to potential USB sticks, the location of the MBR can not be
 # determined safely in general, so this needs to be specified:
-d-i grub-installer/bootdev string {{ install_device }}
+d-i grub-installer/bootdev string default
 
 ### Finishing up the installation
 # Avoid that last message about the install being complete.

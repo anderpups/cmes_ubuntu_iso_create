@@ -9,5 +9,5 @@
 - name: "{{ _version.version_number }}: Generate Custom Preseed Files"
   ansible.builtin.template:
     src: "cmes_ubuntu.seed.jinja"
-    dest: "{{ _version_preseed_directory }}/cmes_ubuntu.seed"
+    dest: "{{ _version_cmes_mods_dir }}/preseed/cmes_ubuntu.seed"
     mode: "0644"

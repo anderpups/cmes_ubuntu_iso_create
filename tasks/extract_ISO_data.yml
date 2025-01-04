@@ -23,7 +23,7 @@
         _efi_part: "{{ _find_iso_efi_partition.stdout | from_json }}"
       ansible.builtin.command:
         chdir: "{{ _version_working_dir }}"
-        cmd: "dd if={{ _version.iso_basename }}.iso of={{ _version.iso_basename }}.efi.img bs=512 skip={{ _efi_part.start }} count={{ efi_part.sectors }}"
+        cmd: "dd if={{ _version.iso_basename }}.iso of={{ _version.iso_basename }}.efi.img bs=512 skip={{ _efi_part.start }} count={{ _efi_part.sectors }}"
         creates: "{{ _version_working_dir }}/{{ _version.iso_basename }}.efi.img"
 
 - name: "{{ _version.version_number }}: Mount Standard ISO"
@@ -31,7 +31,7 @@
     src: "{{ _version_working_dir }}/{{ _version.iso_basename }}.iso"
     path: "{{ _version_iso_mount_dir }}"
     fstype: iso9660
-    fstab: "{{ cmes_ubuntu_iso_create_fstab_temp }}"
+    fstab: "/etc/fstab.ansible-cmes_ubuntu_iso_create.tmp"
     opts: ro,loop
     state: mounted
 
@@ -44,7 +44,7 @@
 
 - name: "{{ _version.version_number }}: Extract Directories for Modification"
   ansible.builtin.include_tasks:
-    name: extract_ISO_directory.yml
+    file: extract_ISO_directory.yml
   loop: "{{ cmes_ubuntu_iso_create_modification_directories }}"
   loop_control:
     loop_var: target_dir

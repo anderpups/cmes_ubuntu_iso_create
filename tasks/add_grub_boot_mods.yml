@@ -1,19 +1,19 @@
 ---
-- name: "{{ _version.version_number }}: Create Grub Theme Directory for CMES EFI boot"
+- name: "{{ _version.version_number }}: Create Grub Theme Directory for CMES"
   ansible.builtin.file:
     path: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes"
     state: directory
-    mode: "0555"
+    mode: "755"
     group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
 
 - name: "{{ _version.version_number }}: Add CMES Grub Theme Graphics"
-  ansible.builtin.narchive:
+  ansible.builtin.unarchive:
     src: "grub_theme_graphics.tgz"
-    dest: "{{ _version_cmes_mods_dir }}/boot/grub/themes/CMES"
+    dest: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes"
 
 - name: "{{ _version.version_number }}: Add CMES Logo to Grub Theme"
   ansible.builtin.copy:
-    src: "cmeslogo.{{ _version.version_number }}.png" # Shared with isolinux (BIOS) boot
+    src: "cmeslogo.{{ _version.version_number }}.png"
     dest: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes/cmeslogo.png"
     mode: "0644"
 

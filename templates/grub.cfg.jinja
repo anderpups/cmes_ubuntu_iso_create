@@ -1,6 +1,5 @@
 
 loadfont /boot/grub/fonts/unicode.pf2
-set gfxmode=auto
 insmod efi_gop
 insmod efi_uga
 insmod gfxterm
@@ -16,42 +15,35 @@ set theme=/boot/grub/themes/cmes/theme.txt
 export theme
 ### END theme setup
 
-default "Try Ubuntu without installing"
+default "Install Ubuntu for CMES"
 #set timeout=90
 set timeout=-1
 
-menuentry "Try Ubuntu without installing" {
-        set gfxpayload=keep
-        linux   /casper/vmlinuz  file=/cdrom/preseed/ubuntu.seed boot=casper quiet splash ---
-        initrd  /casper/initrd
-}
-{% set  default_appends = 'auto=true priority=critical debian-installer/locale=en_US keyboard-configuration/layoutcode=us ubiquity/reboot=true languagechooser/language-name=English countrychooser/shortlist=US localechooser/supported-locales=en_US.UTF-8 boot=casper automatic-ubiquity initrd=/casper/initrd quiet splash noprompt noshell ---' %}
-{% for boot_style in cmes_ubuntu_iso_create_boot_styles %}
-submenu 'CMES Install for {{ boot_style }} boot >' {
-{%   if boot_style == 'efi' %}
-{%         for disk_dev in cmes_ubuntu_iso_create_disk_devices %}
-    menuentry "{{ location }}, {{ part_method }} Install on /dev/{{ disk_dev }}" {
-        set gfxpayload=keep
-        linux   /casper/vmlinuz  file=/cdrom/preseed/cmes_{{ boot_style }}_{{ disk_dev }}_{{ part_method }}.seed {{ default_appends }}
-        initrd  /casper/initrd
-    }
+menuentry 'Install Ubuntu for CMES' {
+  set gfxpayload=keep
+  linux   /casper/vmlinuz file=/cdrom/preseed/cmes_ubuntu.seed -- quiet splash
+  initrd  /casper/initrd
   }
-{%       endfor %}
-{%     endfor %}
-{%   endif %}
-{% endfor %}
-menuentry "Install Ubuntu (standard)" {
-        set gfxpayload=keep
-        linux   /casper/vmlinuz  file=/cdrom/preseed/ubuntu.seed boot=casper only-ubiquity quiet splash ---
-        initrd  /casper/initrd
+menuentry "Try or Install Ubuntu" {
+	set gfxpayload=keep
+	linux	/casper/vmlinuz  --- quiet splash
+	initrd	/casper/initrd
 }
-menuentry "OEM install (for manufacturers)" {
-        set gfxpayload=keep
-        linux   /casper/vmlinuz  file=/cdrom/preseed/ubuntu.seed boot=casper only-ubiquity quiet splash oem-config/enable=true ---
-        initrd  /casper/initrd
+menuentry "Ubuntu (safe graphics)" {
+	set gfxpayload=keep
+	linux	/casper/vmlinuz nomodeset  --- quiet splash
+	initrd	/casper/initrd
 }
-menuentry "Check disc for defects" {
-        set gfxpayload=keep
-        linux   /casper/vmlinuz  boot=casper integrity-check quiet splash ---
-        initrd  /casper/initrd
+grub_platform
+if [ "$grub_platform" = "efi" ]; then
+menuentry 'Boot from next volume' {
+	exit 1
 }
+menuentry 'UEFI Firmware Settings' {
+	fwsetup
+}
+else
+menuentry 'Test memory' {
+	linux16 /boot/memtest86+x64.bin
+}
+fi
