@@ -21,7 +21,7 @@ set timeout=-1
 
 menuentry 'Install Ubuntu for CMES' {
   set gfxpayload=keep
-  linux   /casper/vmlinuz file=/cdrom/preseed/cmes_ubuntu.seed -- quiet splash
+  linux   /casper/vmlinuz quiet autoinstall ds=nocloud\;s=/cdrom/nocloud/ ---
   initrd  /casper/initrd
   }
 menuentry "Try or Install Ubuntu" {

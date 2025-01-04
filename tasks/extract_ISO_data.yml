@@ -6,7 +6,6 @@
     creates: "{{ _version_working_dir }}/{{ _version.iso_basename }}.mbr"
 
 - name: "{{ _version.version_number }}: Extract EFI Boot Image from Standard ISO"
-  when: _version.version_number > 21
   # The EFI partition is no longer a data file on the ISO
   # So we need extract the EFI partition image from the ISO as well
   block:
@@ -36,7 +35,7 @@
     state: mounted
 
 - name: "{{ _version.version_number }}: Create Modifications Directory"
-  file:
+  ansible.builtin.file:
     state: directory
     path: "{{ _version_cmes_mods_dir }}"
     group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
