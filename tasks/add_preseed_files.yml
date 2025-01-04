@@ -1,0 +1,13 @@
+---
+- name: "{{ _version.version_number }}: Add example preseed file for reference (includes copious comments)"
+  ansible.builtin.copy:
+    src: "example.seed"
+    dest: "{{ _version_cmes_mods_dir }}/preseed/example.seed"
+    mode: "0644"
+
+### Going to fail ###
+- name: "{{ _version.version_number }}: Generate Custom Preseed Files"
+  ansible.builtin.template:
+    src: "cmes_ubuntu.seed.jinja"
+    dest: "{{ _version_preseed_directory }}/cmes_ubuntu.seed"
+    mode: "0644"

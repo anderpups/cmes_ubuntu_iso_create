@@ -1,0 +1,49 @@
+---
+- name: "{{ _version.version_number }}: Create Version Working Directory"
+  ansible.builtin.file:
+    path: "{{ _version_working_dir }}"
+    state: directory
+    mode: '0775'
+    group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
+
+- name: "{{ _version.version_number }}: Download Standard Distribution ISO"
+  ansible.builtin.get_url:
+    url: "{{ _version.iso_source_url }}"
+    dest: "{{ _version_working_dir }}/{{ _version.iso_basename }}.iso"
+  when: not cmes_ubuntu_iso_create_use_local_iso_file | bool
+
+- name: "{{ _version.version_number }}: Copy Standard Distribution ISO"
+  ansible.builtin.include_tasks:
+    name: copy_local_ISO_file.yml
+  when: cmes_ubuntu_iso_create_use_local_iso_file | bool
+
+- name: "{{ _version.version_number }}: Extract Standard ISO Data"
+  ansible.builtin.include_tasks:
+    name: extract_ISO_data.yml
+
+- name: "{{ _version.version_number }}: Add Legacy BIOS boot mods (isolinux)"
+  ansible.builtin.include_tasks:
+    name: add_isolinux_boot_mods.yml
+  when: _version.version_number < 21
+
+- name: "{{ _version.version_number }}: Add Modern EFI boot mods (grub)"
+  ansible.builtin.include_tasks:
+    name: add_grub_boot_mods.yml
+
+- name: "{{ _version.version_number }}: Add ubiquity Preseed Files"
+  ansible.builtin.include_tasks:
+    name: add_preseed_files.yml
+
+- name: "{{ _version.version_number }}: Add CMES utility scripts"
+  ansible.builtin.include_tasks:
+    name: add_utility_scripts.yml
+
+- name: "{{ _version.version_number }}: Add a README file documenting modifications"
+  ansible.builtin.copy:
+    content: "{{ cmes_ubuntu_iso_create_README_content }}"
+    dest: "{{ _version_cmes_mods_dir }}/README.cmes"
+    mode: 0644
+
+- name: "{{ _version.version_number }}: Create Customized ISO File"
+  ansible.builtin.include_tasks:
+    name: create_custom_ISO_file.yml

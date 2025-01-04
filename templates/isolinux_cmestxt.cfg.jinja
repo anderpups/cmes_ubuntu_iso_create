@@ -1,0 +1,38 @@
+default cancel
+label cancel
+  menu label Skip to next boot device
+  localboot -1
+{# BEGIN CMES Custom Menu Items #}
+{% set  default_appends = 'auto=true priority=critical debian-installer/locale=en_US keyboard-configuration/layoutcode=us ubiquity/reboot=true languagechooser/language-name=English countrychooser/shortlist=US localechooser/supported-locales=en_US.UTF-8 boot=casper automatic-ubiquity initrd=/casper/initrd quiet splash noprompt noshell ---' %}
+{% for boot_style in cmes_ubuntu_iso_create_boot_styles %}
+{% if boot_style == 'bios' %}
+{% for disk_dev in cmes_ubuntu_iso_create_disk_devices %}
+    label {{ disk_dev }}
+      menu label Install on /dev/^{{ disk_dev }}
+      kernel /casper/vmlinuz
+      append  file=/cdrom/preseed/cmes__{{ boot_style }}_{{ disk_dev }}.seed {{ default_appends }}
+{% endfor %}{# disk_dev #}
+    menu separator
+      label back
+        menu label ^BACK
+        menu exit
+  menu end
+menu end
+{% endif %}{# boot_style == 'bios' #}
+{% endfor %}{# boot_style #}
+{# END CMES Custom Menu Items #}
+label live-install
+  menu label Standard Install (without CMES preseeding)
+  kernel /casper/vmlinuz
+  append  file=/cdrom/preseed/ubuntu.seed boot=casper only-ubiquity initrd=/casper/initrd quiet splash ---
+label live
+  menu label Boot into Ubuntu Live environment
+  kernel /casper/vmlinuz
+  append  file=/cdrom/preseed/ubuntu.seed boot=casper initrd=/casper/initrd quiet splash ---
+label check
+  menu label Check disc for defects
+  kernel /casper/vmlinuz
+  append  boot=casper integrity-check initrd=/casper/initrd quiet splash ---
+label memtest
+  menu label Test memory
+  kernel /install/mt86plus

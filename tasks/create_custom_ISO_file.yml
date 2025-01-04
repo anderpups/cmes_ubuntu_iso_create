@@ -1,0 +1,64 @@
+---
+- name: "{{ _version.version_number }}: Check for Existing CMES ISO file"
+  ansible.builtin.stat:
+    path: "{{ _version_working_dir }}/{{ _version.iso_basename }}.cmes.iso"
+  register: _cmes_iso_check
+
+- name: "{{ _version.version_number }}: Check for Updates to CMES Modified content"
+  ansible.builtin.command:
+    cmd: "find {{ _version_cmes_mods_dir }} -type f -cnewer {{ _version_working_dir }}/{{ _version.iso_basename }}.cmes.iso"
+  register: _find_changed_files
+  when: _cmes_iso_check.stat.exists
+  changed_when: _find_changed_files.stdout_lines | length > 0
+
+- name: "{{ _version.version_number }}: Create ISO File as Required"
+  when: not _cmes_iso_check.stat.exists or _find_changed_files is changed
+  block:
+    - name: "{{ _version.version_number }}: Create Legacy Installation ISO (USB flash bootable)"
+      when: _version.version_number < 21
+      ansible.builtin.command:
+        cmd: "xorriso \
+          -as mkisofs \
+          -J -l -r -V \"{{ _version.iso_volume_id  }}\" \
+          -isohybrid-mbr \"{{ _version_working_dir }}/{{ _version.iso_basename }}.mbr\" \
+          -c isolinux/boot.cat \
+          -b isolinux/isolinux.bin \
+          -no-emul-boot -boot-load-size 4 -boot-info-table \
+          -eltorito-alt-boot \
+          -e boot/grub/efi.img \
+          -no-emul-boot -isohybrid-gpt-basdat \
+          -o \"{{ _version_working_dir }}/{{ _version.iso_basename }}.cmes.iso\" \
+          -graft-points \
+          {{ _version_iso_mount_dir }} \
+          /isolinux\\={{ _version_cmes_mods_dir }}/isolinux \
+          /boot\\={{ _version_cmes_mods_dir }}/boot \
+          /preseed\\={{ _version_cmes_mods_dir }}/preseed \
+          {{ cmes_ubuntu_iso_create_content_iso_root }}\\={{ _version_cmes_content_root }} \
+          /README.cmes\\={{ _version_cmes_mods_dir }}/README.cmes"
+
+    - name: "{{ _version.version_number }}: Create Modern Installation ISO (USB flash bootable)"
+      when: _version.version_number > 21
+      ansible.builtin.command:
+        chdir: "{{ _version_working_dir }}"
+        cmd: "xorriso \
+          -as mkisofs \
+          -r -V \"{{ _version.iso_volume_id  }}\" \
+          -o \"{{ _version_working_dir }}/{{ _version.iso_basename }}.cmes.iso\" \
+          --grub2-mbr \"{{ _version_working_dir }}/{{ _version.iso_basename }}.mbr\" \
+          -partition_offset 16 \
+          --mbr-force-bootable \
+          -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b {{ _version_working_dir }}/{{ _version.iso_basename }}.efi.img \
+          -appended_part_as_gpt \
+          -iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7 \
+          -c '/boot.catalog' \
+          -b '/boot/grub/i386-pc/eltorito.img' \
+          -no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
+          -eltorito-alt-boot \
+          -e '--interval:appended_partition_2:::' \
+          -no-emul-boot \
+          -graft-points \
+          {{ _version_iso_mount_dir }} \
+          /boot\\={{ _version_cmes_mods_dir }}/boot \
+          /preseed\\={{ _version_cmes_mods_dir }}/preseed \
+          {{ cmes_ubuntu_iso_create_content_iso_root }}\\={{ _version_cmes_content_root }} \
+          /README.cmes\\={{ _version_cmes_mods_dir }}/README.cmes"

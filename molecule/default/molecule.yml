@@ -1,0 +1,8 @@
+---
+driver:
+  name: vagrant
+platforms:
+  - name: ubuntu-24.04
+    box: bento/ubuntu-24.04
+provisioner:
+  name: ansible

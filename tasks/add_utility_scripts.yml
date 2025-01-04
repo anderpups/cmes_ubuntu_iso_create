@@ -1,0 +1,13 @@
+---
+- name: "{{ _version.version_number }}: Create CMES Workstation Files Directory"
+  ansible.builtin.file:
+    path: "{{ _version_cmes_content_root }}/workstation"
+    state: directory
+    mode: "0555"
+    group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
+
+- name: "{{ _version.version_number }}: Add Workstation Specific Files"
+  ansible.builtin.copy:
+    src: "bootstrap.sh"
+    dest: "{{ _version_cmes_content_root }}/workstation/"
+    mode: "0644"
