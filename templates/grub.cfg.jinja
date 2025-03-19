@@ -1,3 +1,4 @@
+insmod all_video ## Allows for graphics grub on qemu
 
 loadfont /boot/grub/fonts/unicode.pf2
 insmod efi_gop
@@ -15,35 +16,19 @@ set theme=/boot/grub/themes/cmes/theme.txt
 export theme
 ### END theme setup
 
-default "Install Ubuntu for CMES"
-#set timeout=90
-set timeout=-1
+set timeout=90
 
 menuentry 'Install Ubuntu for CMES' {
   set gfxpayload=keep
-  linux   /casper/vmlinuz quiet autoinstall ds=nocloud\;s=/cdrom/nocloud/ ---
+  linux   /casper/vmlinuz quiet autoinstall ds=nocloud\;s=/cdrom// ---
   initrd  /casper/initrd
-  }
-menuentry "Try or Install Ubuntu" {
-	set gfxpayload=keep
-	linux	/casper/vmlinuz  --- quiet splash
-	initrd	/casper/initrd
 }
-menuentry "Ubuntu (safe graphics)" {
-	set gfxpayload=keep
-	linux	/casper/vmlinuz nomodeset  --- quiet splash
-	initrd	/casper/initrd
-}
-grub_platform
-if [ "$grub_platform" = "efi" ]; then
-menuentry 'Boot from next volume' {
-	exit 1
-}
+
 menuentry 'UEFI Firmware Settings' {
-	fwsetup
+  fwsetup
 }
 else
 menuentry 'Test memory' {
-	linux16 /boot/memtest86+x64.bin
+  linux16 /boot/memtest86+x64.bin
 }
 fi

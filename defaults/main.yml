@@ -22,5 +22,5 @@ cmes_ubuntu_iso_create_versions:
     iso_basename: ubuntu-24.04.1-desktop-amd64
     iso_volume_id: Ubuntu 24.04 LTS amd64
     iso_mbr_bytes: 432
-    iso_source_url: https://releases.ubuntu.com/noble/ubuntu-24.04.1-desktop-amd64.iso
+    iso_source_url: https://releases.ubuntu.com/noble/ubuntu-24.04.2-desktop-amd64.iso
     # Enabling use_local_iso_file ignores iso_source_url and looks for the ISO in ~/Downloads and ./files

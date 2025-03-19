@@ -9,9 +9,10 @@ Taken from [here](https://www.pugetsystems.com/labs/hpc/ubuntu-22-04-server-auto
 - `touch cmes_utils/cloud-init/meta-data`
 - Create `cmes_utils/cloud-init/user-data`
 - `xorriso -indev ubuntu-24.04.1-desktop-amd64.iso -report_el_torito as_mkisofs` to get commands
+- Make sure the label (-V) remains the same. It is used to detect os in vm creation.
 - Replace commands with stuff. Trying this:
     ```bash
-    xorriso -as mkisofs -r -V 'CMES_Ubuntu_24.04.1_LTS' \
+    xorriso -as mkisofs -r -V 'Ubuntu 24.04.1 LTS amd64' \
     -o ../ubuntu-24.04.1-desktop-amd64.cmes.iso \
     --modification-date='2024082716232600' \
     --grub2-mbr ../boot_images/1-Boot-NoEmul.img \
