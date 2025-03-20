@@ -1,7 +1,8 @@
 ---
 - name: Converge
   hosts: all
-  become: yes
+  become: true
+  gather_facts: false
   tasks:
     - name: "Include cmes_ubuntu_iso_create"
       include_role:

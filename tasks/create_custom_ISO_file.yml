@@ -34,6 +34,6 @@
       -graft-points \
       {{ _version_iso_mount_dir }} \
       /boot\\={{ _version_cmes_mods_dir }}/boot \
-      /preseed\\={{ _version_cmes_mods_dir }}/preseed \
-      /cmes_utils\\={{ _version_cmes_mods_dir }}/cmes_utils \
+      /cmes-utils\\={{ _version_cmes_mods_dir }}/cmes-utils/ \
+      /cloud-init\\={{ _version_cmes_mods_dir }}/cloud-init/ \
       /README.cmes\\={{ _version_cmes_mods_dir }}/README.cmes"

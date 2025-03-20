@@ -1,0 +1,39 @@
+insmod all_video ## Allows for graphics grub on qemu ##
+insmod efi_gop
+insmod efi_uga
+insmod gfxterm
+terminal_output gfxterm
+
+loadfont /boot/grub/fonts/unicode.pf2
+insmod part_gpt
+insmod lvm
+insmod ext2
+insmod gfxmenu
+insmod png
+
+set theme=/boot/grub/themes/cmes/theme.txt
+export theme
+
+set timeout=90
+
+{% for install in cmes_ubuntu_iso_create_install_types %}
+menuentry '{{ install | capitalize }} CMES install' {
+  set gfxpayload=keep
+  echo What is the hostname
+  read hostname
+  linux   /casper/vmlinuz debug autoinstall subiquity.autoinstallpath=/cdrom/cloud-init/{{ install }}.yaml quiet splash---
+  initrd  /casper/initrd
+}
+{% endfor %}
+
+menuentry 'UEFI Firmware Settings' {
+  fwsetup
+}
+else
+menuentry 'Test memory' {
+  linux16 /boot/memtest86+x64.bin
+}
+
+menuentry 'Boot from next volume' {
+    exit 1
+}

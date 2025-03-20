@@ -25,13 +25,9 @@
   ansible.builtin.include_tasks:
     file: add_grub_boot_mods.yml
 
-- name: "{{ _version.version_number }}: Add ubiquity Preseed Files"
+- name: "{{ _version.version_number }}: Add CMES files to ISO"
   ansible.builtin.include_tasks:
-    file: add_preseed_files.yml
-
-- name: "{{ _version.version_number }}: Add CMES utility scripts"
-  ansible.builtin.include_tasks:
-    file: add_utility_scripts.yml
+    file: add_files_to_iso.yml
 
 - name: "{{ _version.version_number }}: Add a README file documenting modifications"
   ansible.builtin.copy:

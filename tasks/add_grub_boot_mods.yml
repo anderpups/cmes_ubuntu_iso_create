@@ -25,6 +25,6 @@
 
 - name: "{{ _version.version_number }}: Create grub config file"
   ansible.builtin.template:
-    src: "grub.cfg.jinja"
+    src: "grub.cfg.j2"
     dest: "{{ _version_cmes_mods_dir }}/boot/grub/grub.cfg"
     mode: "0644"

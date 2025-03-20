@@ -1,0 +1,16 @@
+#cloud-config
+version: 1
+locale: en_US.UTF-8
+keyboard:
+  layout: us
+identity:
+  password: "$6$rounds=1200$leM0EGckf59KDAaz$l1HgqLi9/h2OQnLMbTKovEt7VjCW.h1S3cJsF6FDWmURxH5Pgo1m1BxhV/l/vEAKnn3VMH7FeDhnzYMxizfkN1"
+  username: cmes
+  hostname: localhost
+
+timezone: Australia/Sydney
+
+{%if install_type == 'online' %}
+refresh-installer:
+  update: true
+{% endif %}
