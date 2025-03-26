@@ -4,8 +4,8 @@ locale: en_US.UTF-8
 keyboard:
   layout: us
 identity:
-  password: "$6$rounds=1200$leM0EGckf59KDAaz$l1HgqLi9/h2OQnLMbTKovEt7VjCW.h1S3cJsF6FDWmURxH5Pgo1m1BxhV/l/vEAKnn3VMH7FeDhnzYMxizfkN1"
-  username: cmes
+  password: "$6$rounds=1200$f5A9ofw7rq2NCIh.$qdcqCHTWpB/ZLbKLpwt2NbSBRuzgqFmMLcMBneFABtxwu18pt2PJAkKcp9VGTop1X9Bvvbqmelw1eshBhoyno/"
+  username: pi
   hostname: localhost
 
 timezone: Australia/Sydney
@@ -14,3 +14,10 @@ timezone: Australia/Sydney
 refresh-installer:
   update: true
 {% endif %}
+
+ansible:
+  package_name: ansible
+  install_method: distro
+  pull:
+    url: https://github.com/techieswithoutborders/cmes_pi_builder.git
+    playbook_name: step1.yml

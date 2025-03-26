@@ -7,12 +7,11 @@
 - name: "Main: Process Each Version"
   ansible.builtin.include_tasks:
     file: process_version.yml
-  when: _version.enabled | bool
   loop: "{{ cmes_ubuntu_iso_create_versions }}"
   loop_control:
     loop_var: _version
   vars:
     _version_working_dir: "{{ cmes_ubuntu_iso_create_working_dir }}/{{ _version.version_number }}"
-    _version_base_folder: "{{ _version_working_dir }}/{{ _version.iso_basename }}"
-    _version_iso_mount_dir: "{{ _version_base_folder }}.mounted_iso_files"
+    _version_base_folder: "{{ _version_working_dir }}/{{ _version.image_basename }}"
+    _version_mount_dir: "{{ _version_base_folder }}.mounted_img_files"
     _version_cmes_mods_dir: "{{ _version_base_folder }}.cmes_modified_files"

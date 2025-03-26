@@ -1,0 +1,50 @@
+---
+- name: "{{ _version.image_basename }}: Extract Master Boot Record from Standard ISO"
+  ansible.builtin.command:
+    chdir: "{{ _version_working_dir }}"
+    cmd: "dd if={{ _version.image_basename }}.iso of={{ _version.image_basename }}.mbr bs=1 count={{ _version.iso_mbr_bytes }}"
+    creates: "{{ _version_working_dir }}/{{ _version.image_basename }}.mbr"
+  when: "'amd64' in _version.image_basename"
+
+- name: "{{ _version.image_basename }}: Extract EFI Boot Image from Standard ISO"
+  # The EFI partition is no longer a data file on the ISO
+  # So we need extract the EFI partition image from the ISO as well
+  block:
+    - name: "{{ _version.image_basename }}: Find EFI System Partion on Standard ISO"
+      ansible.builtin.shell: |
+        fdisk -l {{ _version_working_dir }}/{{ _version.image_basename }}.iso | \
+        grep EFI | awk '{print "{\"start\": \""$2"\", \"sectors\":\""$4"\"}"}'
+      register: _find_iso_efi_partition
+      changed_when: false
+      check_mode: false
+
+    - name: "{{ _version.image_basename }}: Extract EFI System Partion from Standard ISO"
+      vars:
+        _efi_part: "{{ _find_iso_efi_partition.stdout | from_json }}"
+      ansible.builtin.command:
+        chdir: "{{ _version_working_dir }}"
+        cmd: "dd if={{ _version.image_basename }}.iso of={{ _version.image_basename }}.efi.img bs=512 skip={{ _efi_part.start }} count={{ _efi_part.sectors }}"
+        creates: "{{ _version_working_dir }}/{{ _version.image_basename }}.efi.img"
+
+- name: "{{ _version.image_basename }}: Mount Standard ISO"
+  ansible.builtin.mount:
+    src: "{{ _version_working_dir }}/{{ _version.image_basename }}.iso"
+    path: "{{ _version_mount_dir }}"
+    fstype: iso9660
+    fstab: "/etc/fstab.ansible-cmes_ubuntu_iso_create.tmp"
+    opts: ro,loop
+    state: mounted
+
+- name: "{{ _version.image_basename }}: Create Modifications Directory"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ _version_cmes_mods_dir }}"
+    group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
+    mode: 0755
+
+- name: "{{ _version.image_basename }}: Extract Directories for Modification"
+  ansible.builtin.include_tasks:
+    file: x86_64_tasks/extract_ISO_directory.yml
+  loop: "{{ cmes_ubuntu_iso_create_modification_directories }}"
+  loop_control:
+    loop_var: target_dir

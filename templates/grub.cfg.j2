@@ -19,13 +19,15 @@ set timeout=90
 {% for install in cmes_ubuntu_iso_create_install_types %}
 menuentry '{{ install | capitalize }} CMES install' {
   set gfxpayload=keep
-  echo What is the hostname
-  read hostname
   linux   /casper/vmlinuz debug autoinstall subiquity.autoinstallpath=/cdrom/cloud-init/{{ install }}.yaml quiet splash---
   initrd  /casper/initrd
 }
 {% endfor %}
 
+if [ "$grub_platform" = "efi" ]; then
+menuentry 'Boot from next volume' {
+  exit 1
+}
 menuentry 'UEFI Firmware Settings' {
   fwsetup
 }
@@ -33,7 +35,4 @@ else
 menuentry 'Test memory' {
   linux16 /boot/memtest86+x64.bin
 }
-
-menuentry 'Boot from next volume' {
-    exit 1
-}
+fi

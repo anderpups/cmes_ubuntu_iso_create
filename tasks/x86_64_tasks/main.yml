@@ -1,0 +1,27 @@
+---
+- name: "{{ _version.image_basename }}: Download Standard Distribution ISO"
+  ansible.builtin.get_url:
+    url: "{{ _version.source_url }}"
+    dest: "{{ _version_working_dir }}/{{ _version.image_basename }}.iso"
+
+- name: "{{ _version.image_basename }}: Extract Standard ISO Data"
+  ansible.builtin.include_tasks:
+    file: x86_64_tasks/extract_ISO_data.yml
+
+- name: "{{ _version.image_basename }}: Add EFI boot mods (grub)"
+  ansible.builtin.include_tasks:
+    file: x86_64_tasks/add_grub_boot_mods.yml
+
+- name: "{{ _version.image_basename }}: Add CMES files to ISO"
+  ansible.builtin.include_tasks:
+    file: x86_64_tasks/add_files_to_iso.yml
+
+- name: "{{ _version.image_basename }}: Add a README file documenting modifications"
+  ansible.builtin.copy:
+    content: "{{ cmes_ubuntu_iso_create_README_content }}"
+    dest: "{{ _version_cmes_mods_dir }}/README.cmes"
+    mode: 0644
+
+- name: "{{ _version.image_basename }}: Create Customized ISO File"
+  ansible.builtin.include_tasks:
+    file: x86_64_tasks/create_custom_ISO_file.yml

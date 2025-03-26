@@ -1,29 +1,29 @@
 ---
-- name: "{{ _version.version_number }}: Create Grub Theme Directory for CMES"
+- name: "{{ _version.image_basename }}: Create Grub Theme Directory for CMES"
   ansible.builtin.file:
     path: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes"
     state: directory
     mode: "755"
     group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
 
-- name: "{{ _version.version_number }}: Add CMES Grub Theme Graphics"
+- name: "{{ _version.image_basename }}: Add CMES Grub Theme Graphics"
   ansible.builtin.unarchive:
     src: "grub_theme_graphics.tgz"
     dest: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes"
 
-- name: "{{ _version.version_number }}: Add CMES Logo to Grub Theme"
+- name: "{{ _version.image_basename }}: Add CMES Logo to Grub Theme"
   ansible.builtin.copy:
     src: "cmeslogo.{{ _version.version_number }}.png"
     dest: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes/cmeslogo.png"
     mode: "0644"
 
-- name: "{{ _version.version_number }}: Add Grub Theme configuration File"
+- name: "{{ _version.image_basename }}: Add Grub Theme configuration File"
   ansible.builtin.copy:
     src: "grub_theme.txt"
     dest: "{{ _version_cmes_mods_dir }}/boot/grub/themes/cmes/theme.txt"
     mode: "0644"
 
-- name: "{{ _version.version_number }}: Create grub config file"
+- name: "{{ _version.image_basename }}: Create grub config file"
   ansible.builtin.template:
     src: "grub.cfg.j2"
     dest: "{{ _version_cmes_mods_dir }}/boot/grub/grub.cfg"

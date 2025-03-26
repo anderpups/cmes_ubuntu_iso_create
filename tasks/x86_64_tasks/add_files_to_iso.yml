@@ -1,5 +1,5 @@
 ---
-- name: "{{ _version.version_number }}: Add cmes-utils directory"
+- name: "{{ _version.image_basename }}: Add cmes-utils directory"
   ansible.builtin.copy:
     src: "cmes-utils"
     dest: "{{ _version_cmes_mods_dir }}/"
@@ -13,16 +13,7 @@
     mode: "0555"
     group: "{{ cmes_ubuntu_iso_create_group_sticky_gid | int }}"
 
-- name: "{{ _version.version_number }}: Add cloud-init files for {{ item }} install"
-  ansible.builtin.template:
-    src: autoinstall.yaml.j2
-    dest: "{{ _version_cmes_mods_dir }}/cloud-init/{{ item }}.yaml"
-    mode: "0644"
-  loop: "{{ cmes_ubuntu_iso_create_install_types }}"
-  vars:
-    install_type: "{{ item }}"
-
-- name: "{{ _version.version_number }}: Validate schema"
+- name: "{{ _version.image_basename }}: Validate schema"
   ansible.utils.validate:
     data: "{{ lookup('ansible.builtin.template', 'autoinstall.yaml.j2') | from_yaml }}"
     criteria: "{{ lookup('ansible.builtin.file', 'autoinstall_schema.json') }}"
@@ -30,16 +21,11 @@
   vars:
     install_type: "{{ item }}"
 
-
-########## DELETE ME ###########
-- name: Test
-  ansible.builtin.debug:
-    msg: "{{ lookup('ansible.builtin.template', 'autoinstall.yaml.j2') | from_yaml }}"
+- name: "{{ _version.image_basename }}: Add cloud-init files for {{ item }} install"
+  ansible.builtin.template:
+    src: autoinstall.yaml.j2
+    dest: "{{ _version_cmes_mods_dir }}/cloud-init/{{ item }}.yaml"
+    mode: "0644"
   loop: "{{ cmes_ubuntu_iso_create_install_types }}"
   vars:
     install_type: "{{ item }}"
-- name: Test
-  ansible.builtin.pause:
-    minutes: 5
-    ###################
-

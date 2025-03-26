@@ -1,26 +1,26 @@
 ---
-- name: "{{ _version.version_number }}: Check for /{{ target_dir }} on ISO"
+- name: "{{ _version.image_basename }}: Check for /{{ target_dir }} on ISO"
   ansible.builtin.stat:
-    path: "{{ _version_iso_mount_dir }}/{{ target_dir }}"
+    path: "{{ _version_mount_dir }}/{{ target_dir }}"
   register: _iso_source_dir
 
-- name: "{{ _version.version_number }}: Check for /{{ target_dir }} in Modified"
+- name: "{{ _version.image_basename }}: Check for /{{ target_dir }} in Modified"
   ansible.builtin.stat:
     path: "{{ _version_cmes_mods_dir }}/{{ target_dir }}"
   register: _modified_dir
 
-- name: "{{ _version.version_number }}: Prepare Mods Directory for /{{ target_dir }}"
+- name: "{{ _version.image_basename }}: Prepare Mods Directory for /{{ target_dir }}"
   when: _iso_source_dir.stat.exists
   block:
-    - name: "{{ _version.version_number }}: Create Mods Directory for /{{ target_dir }}"
+    - name: "{{ _version.image_basename }}: Create Mods Directory for /{{ target_dir }}"
       ansible.builtin.file:
         state: directory
         path: "{{ _version_cmes_mods_dir }}/{{ target_dir }}"
         mode: "0555"
 
-    - name: "{{ _version.version_number }}: Synchronize /{{ target_dir }} ISO Content for Modification"
+    - name: "{{ _version.image_basename }}: Synchronize /{{ target_dir }} ISO Content for Modification"
       ansible.posix.synchronize:
-        src: "{{ _version_iso_mount_dir }}/{{ target_dir }}"
+        src: "{{ _version_mount_dir }}/{{ target_dir }}"
         dest: "{{ _version_cmes_mods_dir }}"
         archive: true
         times: "{{ not _modified_dir.stat.exists }}"
@@ -32,7 +32,7 @@
       delegate_to: "{{ inventory_hostname }}" # This keeps the exchange local (i.e no ssh)
       register: _sync_job_details
 
-    - name: "{{ _version.version_number }}: Show Changes to /{{ target_dir }}"
+    - name: "{{ _version.image_basename }}: Show Changes to /{{ target_dir }}"
       # If anything gets overwritten on a second pass, we want to know about it
       debug:
         var: _sync_job_details

@@ -1,0 +1,97 @@
+---
+- name: "{{ _version.image_basename }}: Download and extract img file"
+  ansible.builtin.shell:
+    cmd: >-
+      curl --output {{ _version_working_dir }}/{{ _version.image_basename }}.img.xz "{{ _version.source_url }}" &&
+      unxz {{ _version_working_dir }}/{{ _version.image_basename }}.img.xz
+    creates: "{{ _version_working_dir }}/{{ _version.image_basename }}.img"
+
+- name: "{{ _version.image_basename }}: Create custom img file"
+  ansible.builtin.command:
+    cmd: "cp {{ _version_working_dir }}/{{ _version.image_basename }}.img {{ _version_working_dir }}/{{ _version.image_basename }}.cmes.img"
+    creates: "{{ _version_working_dir }}/{{ _version.image_basename }}.cmes.img"
+
+- name: "{{ _version.image_basename }}: Create mount directory"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ _version_mount_dir }}"
+    mode: "0555"
+
+- name: "{{ _version.image_basename }}: See if loopback mount exists"
+  ansible.builtin.shell:
+    cmd: "losetup -l"
+  changed_when: no
+  register: _loopback_list
+
+- name: "{{ _version.image_basename }}: Get next free loopback address"
+  when: "_version.image_basename not in _loopback_list.stdout"
+  block:
+    - name: "{{ _version.image_basename }}: Get next free loopback address"
+      ansible.builtin.command:
+        cmd: "losetup -f"
+      changed_when: false
+      register: _losetup_f_cmd
+
+    - name: "{{ _version.image_basename }}: Get next free loopback address"
+      ansible.builtin.set_fact:
+        _loopback_address: "{{ _losetup_f_cmd.stdout | trim }}"
+
+- name: "{{ _version.image_basename }}: Get existing mounted loopback address"
+  when: "_version.image_basename in _loopback_list.stdout"
+  block:
+    - name: "{{ _version.image_basename }}: Get loopback address being used"
+      ansible.builtin.shell:
+        cmd: "losetup -l | grep {{ _version.image_basename }} | awk '{print $1}'"
+      changed_when: false
+      register: _losetup_f_cmd
+
+    - name: "{{ _version.image_basename }}: Get next free loopback address"
+      ansible.builtin.set_fact:
+        _loopback_address: "{{ _losetup_f_cmd.stdout | trim }}"
+
+- name: "{{ _version.image_basename }}: Add img to loopback"
+  ansible.builtin.command:
+    cmd: "losetup -P {{ _loopback_address }} {{ _version_working_dir }}/{{ _version.image_basename }}.cmes.img"
+    creates: "{{ _loopback_address + 'p1' }}"
+
+- name: "{{ _version.image_basename }}: Mount IMG partitions"
+  ansible.builtin.mount:
+    src: "{{ item.src }}"
+    path: "{{ _version_mount_dir }}/{{ item.path }}"
+    fstype: "{{ item.fstype }}"
+    state: mounted
+  loop:
+    - src: "{{ _loopback_address + 'p1' }}"
+      path: "boot"
+      fstype: vfat
+    - src: "{{ _loopback_address + 'p2' }}"
+      path: "os"
+      fstype: ext4
+
+- name: Overwrite user-data file
+  ansible.builtin.template:
+    src: user-data.j2
+    dest: "{{ _version_mount_dir }}/boot/user-data"
+
+- name: "{{ _version.image_basename }}: Unmount IMG partitions"
+  ansible.builtin.mount:
+    src: "{{ item }}"
+    path: "{{ _version_mount_dir }}/{{ item }}"
+    state: unmounted
+  loop:
+    - boot
+    - os
+
+- name: "{{ _version.image_basename }}: Remove img from loopback"
+  ansible.builtin.command:
+    cmd: "losetup -d {{ _loopback_address }}"
+
+- name: "{{ _version.image_basename }}: Set permissions"
+  ansible.builtin.file: 
+    path": "{{ _version_working_dir }}/{{ _version.image_basename }}.cmes.img"
+    mode: '777'
+
+# - name: "{{ _version.image_basename }}: Compress img"
+#   ansible.builtin.command:
+#     cmd: "xz -v {{ _version_working_dir }}/{{ _version.image_basename }}.cmes.img"
+#     creates: "{{ _version_working_dir }}/{{ _version.image_basename }}.cmes.img.xz"
