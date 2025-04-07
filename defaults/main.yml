@@ -22,14 +22,14 @@ cmes_ubuntu_iso_create_README_content: |
   WARNING: Content in this ISO has been customized for use by CMES
 
 cmes_ubuntu_iso_create_versions:
-  # - version_number: 24.04
-  #   arch: x86_64
-  #   image_basename: ubuntu-24.04.2-desktop-amd64
-  #   volume_id: CMES Ubuntu 24.04 Desktop LTS
-  #   iso_mbr_bytes: 432
-  #   source_url: https://releases.ubuntu.com/24.04/ubuntu-24.04.2-desktop-amd64.iso
   - version_number: 24.04
-    arch: raspi64
-    image_basename: ubuntu-24.04.2-preinstalled-desktop-arm64+raspi
-    volume_id: CMES Ubuntu 24.04 LTS arm64 for RPi
-    source_url: https://cdimage.ubuntu.com/releases/24.04.2/release/ubuntu-24.04.2-preinstalled-desktop-arm64+raspi.img.xz
+    arch: x86_64
+    image_basename: ubuntu-24.04.2-desktop-amd64
+    volume_id: CMES Ubuntu 24.04 Desktop LTS
+    iso_mbr_bytes: 432
+    source_url: https://releases.ubuntu.com/24.04/ubuntu-24.04.2-desktop-amd64.iso
+  # - version_number: 24.04
+  #   arch: raspi64
+  #   image_basename: ubuntu-24.04.2-preinstalled-desktop-arm64+raspi
+  #   volume_id: CMES Ubuntu 24.04 LTS arm64 for RPi
+  #   source_url: https://cdimage.ubuntu.com/releases/24.04.2/release/ubuntu-24.04.2-preinstalled-desktop-arm64+raspi.img.xz

@@ -24,6 +24,18 @@ menuentry '{{ install | capitalize }} CMES install' {
 }
 {% endfor %}
 
+menuentry 'About CMES Ubuntu Installer' {
+  {% for logo_line in (cmes_ascii_logo | split('\n')) %}
+  echo {{ logo_line }}
+  {% endfor %}
+  echo ''
+  echo ''
+  echo This ISO will install the CMES Mini application\rThis version was built on {{ now(utc=true,fmt='%Y-%m-%d %H:%M:%S') }}.
+  echo
+  echo Press Enter to Continue...
+  read -s
+}
+
 if [ "$grub_platform" = "efi" ]; then
 menuentry 'Boot from next volume' {
   exit 1
